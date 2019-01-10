@@ -24,9 +24,12 @@
   </head>
   <body>
     <h1>JSC2Bot</h1>
-    <h3>Controller</h3>
-    <div id="socket">
-      <span>Socket: </span>
+    <div id="socket-id-div">
+      <span>Socket id: </span>
+      <span id="socket-id"></span>
+    </div>
+    <div id="socket-status-div">
+      <span>Socket status: </span>
       <span id="socket-status">Connecting</span>
     </div>
     <div id="control">
@@ -41,6 +44,7 @@
       // Socket
       console.log('initializing');
       const status = document.getElementById('socket-status');
+      const id = document.getElementById('socket-id');
 
       var socket;
       var retrying = false;
@@ -72,8 +76,22 @@
         };
 
         socket.onmessage = (e) => {
-          const message = e.data;
-          console.log(`socket: ${message}`);
+          const m = e.data;
+          console.log(`socket: ${m}`);
+          try {
+            const message = ducks.decode(m);
+            switch (message.type) {
+              case ducks.types.SET_ID: {
+                id.innerHTML = message.id;
+                break;
+              }
+              default: {
+                console.log(`Unknown type: ${message.type}`);
+              }
+            }
+          } catch (e) {
+            console.error(`Could not parse ${e}`);
+          }
         };
       }
 
@@ -100,16 +118,19 @@
 
       // View
 
-      d3.select('#main')
-        .selectAll('.unit')
-        .data(['green', 'red'])
-          .enter()
-          .append('div')
-          .style('color', x => x)
-          .attr('width', '10px')
-          .attr('height', '10px')
-          .attr('class', 'unit')
-          .text(identity)
+      function updateView(data) {
+        d3.select('#main')
+          .selectAll('.unit')
+          .data(data)
+            .enter()
+            .append('div')
+            .style('color', x => x)
+            .attr('width', '10px')
+            .attr('height', '10px')
+            .attr('class', 'unit')
+            .text(identity)
+      }
+      updateView(['red', 'green', 'purple', 'brown']);
 
     </script>
   </body>
