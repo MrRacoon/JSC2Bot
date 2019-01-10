@@ -4,6 +4,9 @@ const http = require('http');
 const express = require('express');
 const WebSocket = require('ws')
 const ducks = require('./socketDucks');
+const jsbot = require('./bot');
+
+const bot = jsbot.create();
 
 // Constants
 const PORT = 3000;
@@ -23,6 +26,19 @@ wss.on('connection', (socket) => {
     try {
       const message = ducks.decode(m);
       console.log(`WS Message: ${message.type}`);
+      switch(message.type) {
+        case ducks.types.START: {
+          console.log(`starting bot`);
+          break;
+        }
+        case ducks.types.STOP: {
+          console.log(`stopping bot`);
+          break;
+        }
+        default: {
+          console.log(`Unkown type: ${message.type}`);
+        }
+      }
     } catch (e) {
       console.error(`Could not parse message ${m}`);
     }
@@ -61,8 +77,14 @@ process.on('SIGINT', () => {
   process.exit();
 });
 
-server.listen(PORT, () => {
-  console.log(`Server Started on port: ${PORT}`);
+function start() {
+  return new Promise((resolve) => {
+    server.listen(PORT, () => {
+      console.log(`Server Started on port: ${PORT}`);
+      resolve(server);
+    });
+  });
+}
 
-});
+module.exports = { start };
 
