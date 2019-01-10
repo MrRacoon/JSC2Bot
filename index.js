@@ -1,2 +1,2 @@
-const server = require('./src');
+const server = require('./src/server');
 server.start();
