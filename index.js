@@ -2,9 +2,10 @@
 const { createAgent, createEngine, createPlayer } = require('@node-sc2/core');
 const { Difficulty, Race } = require('@node-sc2/core/constants/enums');
 
-const botSystem = require('./src');
+const botSystem = require('./src/bot');
 
 const bot = createAgent();
+
 bot.use(botSystem);
 
 const engine = createEngine({

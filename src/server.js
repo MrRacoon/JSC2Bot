@@ -1,42 +1,68 @@
 const fs = require('fs');
 const path = require('path');
-const Koa = require('koa');
-const route = require('koa-route');
-const webSocket = require('koa-websocket');
+const http = require('http');
+const express = require('express');
+const WebSocket = require('ws')
+const ducks = require('./socketDucks');
 
-const app = webSocket(new Koa());
+// Constants
+const PORT = 3000;
 
-let socket;
-app.ws.use(route.all('/', (ctx) => {
-  socket = ctx.websocket;
+// Server Construction
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+let id = 1;
+
+wss.on('connection', (socket) => {
+  socket.id = id++;
+  console.log(`Connected to socket: ${socket.id}`);
 
   socket.on('message', (m) => {
-    console.log(`WS Message: ${m}`);
-    socket.send('connected to the server');
+    try {
+      const message = ducks.decode(m);
+      console.log(`WS Message: ${message.type}`);
+    } catch (e) {
+      console.error(`Could not parse message ${m}`);
+    }
   });
 
-}));
+  socket.on('close', (m) => {
+    console.log(`Closing socket: ${socket.id}`);
+  });
+
+  socket.send(ducks.encode(ducks.setId(socket.id)));
+});
+
+app.use((req, res, next) => {
+  console.log(`${req.method}: ${req.path}`);
+  next();
+})
+
+app.get('/', (req, res, next) => {
+  const payload = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
+  res.send(payload);
+  next();
+});
+
+app.get('/socketDucks.js', (req, res, next) => {
+  const payload = fs.readFileSync(path.resolve(__dirname, 'socketDucks.js'), 'utf8');
+  console.log('sending socket ducks file');
+  res.send(payload);
+  next();
+});
 
 process.on('SIGINT', () => {
-  if (socket) {
-    console.log('Closing Socket');
-    socket.close();
-  }
+  // if (socket) {
+  //   console.log('Closing Socket');
+  //   socket.close();
+  // }
   process.exit();
 });
 
+server.listen(PORT, () => {
+  console.log(`Server Started on port: ${PORT}`);
 
-app.use(async (ctx, next) => {
-  const start = Date.now();
-  next();
-  const fullTime = Date.now() - start;
-  console.log(`Time: ${fullTime}`);
 });
-
-app.use(async (ctx) => {
-  const indexHtml = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
-  ctx.body = indexHtml;
-});
-
-app.listen(3000);
 
