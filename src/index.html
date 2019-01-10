@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>JSC2Bot</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+
+    <style media="screen" type="text/css">
+      #socket-status.error {
+        color: red;
+      }
+      #socket-status.closed {
+        color: red;
+      }
+      #socket-status.reconnect {
+        color: orange;
+      }
+      #socket-status.open {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JSC2Bot</h1>
+    <h3>Controller</h3>
+    <div id="socket">
+      <span>Socket: </span>
+      <span id="socket-status">Connecting</span>
+    </div>
+    <div id="control">
+      <button id="start-btn" type="button" name="button">Start</button>
+      <button id="stop-btn" type="button" name="button">Stop</button>
+    </div>
+    <div id="main"></div>
+    <script type="text/javascript">
+      // Util
+      const identity = x => x;
+
+      // Socket
+      console.log('initializing');
+      const status = document.getElementById('socket-status');
+
+      var socket;
+      var retrying = false;
+      var timeout = 5000;
+      function makeConnection () {
+        socket = new WebSocket('ws://localhost:3000/');
+
+        socket.onerror = (e) => {
+          status.innerHTML = 'Error'
+          status.className = 'error';
+        };
+
+        socket.onopen = (e) => {
+          retrying = false;
+          status.innerHTML = 'Connected';
+          status.className = 'open';
+          socket.send('connected');
+        };
+
+        socket.onclose = (e) => {
+          status.innerHTML = 'Closed';
+          status.className = 'closed';
+          if (!retrying) {
+            retrying = true;
+            console.log('Reconnecting...');
+            status.innerHTML = 'Reconnecting';
+            status.className = 'reconnect';
+          }
+          setTimeout(makeConnection, timeout);
+        };
+
+        socket.onmessage = (e) => {
+          const message = e.data;
+          console.log(`socket: ${message}`);
+        };
+      }
+
+      makeConnection();
+
+
+      // Controller
+      const startBtn = document.getElementById('start-btn');
+      const stopBtn = document.getElementById('stop-btn');
+
+      startBtn.onclick = (e) => {
+        e.preventDefault();
+        console.log('start clicked');
+        socket.send('start');
+      };
+
+      stopBtn.onclick = (e) => {
+        e.preventDefault();
+        console.log('stop clicked');
+        socket.send('stop');
+      };
+
+      // View
+
+      d3.select('#main')
+        .selectAll('.unit')
+        .data(['green', 'red'])
+          .enter()
+          .append('div')
+          .style('color', x => x)
+          .attr('width', '10px')
+          .attr('height', '10px')
+          .attr('class', 'unit')
+          .text(identity)
+
+    </script>
+  </body>
+</html>

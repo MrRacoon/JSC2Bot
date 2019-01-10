@@ -1,0 +1,35 @@
+{
+  "name": "jsc2bot",
+  "version": "1.0.0",
+  "description": "A bot for the ai ladder, written in JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node ./index.js",
+    "server": "node ./src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrRacoon/JSC2Bot.git"
+  },
+  "author": "Erik Sutherland <erik.misu@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MrRacoon/JSC2Bot/issues"
+  },
+  "homepage": "https://github.com/MrRacoon/JSC2Bot#readme",
+  "dependencies": {
+    "@node-sc2/core": "^0.8.0",
+    "hyperscript": "^2.0.2",
+    "hyperscript-helpers": "^3.0.3",
+    "koa": "^2.6.2",
+    "koa-route": "^3.2.0",
+    "koa-websocket": "^5.0.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "sinon": "^7.2.2",
+    "sinon-chai": "^3.3.0"
+  }
+}
