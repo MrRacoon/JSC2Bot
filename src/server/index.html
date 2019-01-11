@@ -32,6 +32,10 @@
       <span>Socket status: </span>
       <span id="socket-status">Connecting</span>
     </div>
+    <div id="socket-loop-div">
+      <span>Socket loop: </span>
+      <span id="socket-loop">-</span>
+    </div>
     <div id="control">
       <button id="start-btn" type="button" name="button">Start</button>
       <button id="stop-btn" type="button" name="button">Stop</button>
@@ -45,6 +49,7 @@
       console.log('initializing');
       const status = document.getElementById('socket-status');
       const id = document.getElementById('socket-id');
+      const loop = document.getElementById('socket-loop');
 
       var socket;
       var retrying = false;
@@ -83,6 +88,10 @@
             switch (message.type) {
               case ducks.types.SET_ID: {
                 id.innerHTML = message.id;
+                break;
+              }
+              case ducks.types.SET_GAME_LOOP: {
+                loop.innerHTML = message.loop;
                 break;
               }
               default: {
