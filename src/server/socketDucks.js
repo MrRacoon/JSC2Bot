@@ -11,6 +11,7 @@
     START: 'START',
     STOP: 'STOP',
     SET_ID: 'SET_ID',
+    SET_GAME_LOOP: 'SET_GAME_LOOP',
   };
 
   e.open = () => ({
@@ -37,6 +38,11 @@
   e.setId = (id) => ({
     type: e.types.SET_ID,
     id,
+  });
+
+  e.setGameLoop = (loop) => ({
+    type: e.types.SET_GAME_LOOP,
+    loop,
   });
 
   if (typeof document !== 'undefined') {
