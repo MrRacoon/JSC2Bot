@@ -47,9 +47,11 @@
 
       // Socket
       console.log('initializing');
+      window.game = {};
       const status = document.getElementById('socket-status');
       const id = document.getElementById('socket-id');
       const loop = document.getElementById('socket-loop');
+
 
       var socket;
       var retrying = false;
@@ -82,7 +84,7 @@
 
         socket.onmessage = (e) => {
           const m = e.data;
-          console.log(`socket: ${m}`);
+          // console.log(`socket: ${m}`);
           try {
             const message = ducks.decode(m);
             switch (message.type) {
@@ -92,6 +94,30 @@
               }
               case ducks.types.SET_GAME_LOOP: {
                 loop.innerHTML = message.loop;
+                break;
+              }
+              case ducks.types.SET_GAME_AGENT: {
+                window.game.agent = message.agent;
+                break;
+              }
+              case ducks.types.SET_GAME_UNITS: {
+                // window.game.units = message.units;
+                rerender(message.units);
+                break;
+              }
+              case ducks.types.SET_BOARD: {
+                // window.game.board = message.board;
+                renderBoard(message.board);
+                break;
+              }
+              case ducks.types.SET_FEATURE_LAYER: {
+                // render.width = +message.x;
+                // render.height = +message.y;
+                // render.src = 'data:image/bmp,' + message.data;
+                break;
+              }
+              case ducks.types.SET_RENDER: {
+                window.game.render = message.render;
                 break;
               }
               default: {
@@ -127,19 +153,52 @@
 
       // View
 
-      function updateView(data) {
-        d3.select('#main')
-          .selectAll('.unit')
-          .data(data)
-            .enter()
-            .append('div')
-            .style('color', x => x)
-            .attr('width', '10px')
-            .attr('height', '10px')
-            .attr('class', 'unit')
-            .text(identity)
+      function renderBoard(board) {
+        window.board = board;
+
+        // window.xScale = d3.linearScale()
+        //   .domain([0, board.x])
+        //   .range([0, screen.x])
+        //
+        // window.yScale = d3.linearScale()
+        //   .domain([0, board.y])
+        //   .range([0, screen.y])
+
+        // window.sizeScale = d3.linearScale()
+        //   .domain([0,10])
+
+        window.main = d3.select('#main')
+          .selectAll('.board')
+          .data([board])
+          .enter()
+            .append('svg')
+            .attr('class', 'board')
+            .style('width', `${board.x}px`)
+            .style('height', `${board.y}px`);
       }
-      updateView(['red', 'green', 'purple', 'brown']);
+
+      function rerender(units) {
+        // console.log(units);
+        const main = d3.select('.board')
+          .selectAll('circle')
+          .data(units, (d, i) => d.tag);
+
+        main
+          .enter()
+            .append('circle')
+          .merge(main)
+            .call(placeUnit);
+
+        main.exit().remove();
+      }
+
+      function placeUnit(selection){
+        selection
+          .attr('cx', d => d.pos.x)
+          .attr('cy', d => d.pos.y)
+          .attr('r', d => d.radius)
+          .text(d => `${d.tag}: ${d.pos.x}x${d.pos.y}`);
+      }
 
     </script>
   </body>

@@ -5,7 +5,28 @@ const workerRush = require('./workerRush');
 const serverRecorder = require('./server');
 
 function create() {
-  const bot = createAgent();
+  const camera = {
+    resolution: {
+      x: 640,
+      y: 480,
+    },
+  //   minimapResolution: {
+  //     x: 128,
+  //     y: 128,
+  //   }
+  };
+
+  const bot = createAgent({
+    settings: {
+      race: Race.PROTOSS,
+    },
+    // interface: {
+    //   raw: true,
+    //   score: true, // optional, score data
+    //   render: camera, // turns on the rendered interface
+    //   featureLayer: camera, // turns on the feature layer interface
+    // },
+  });
   bot.use(workerRush);
   bot.use(serverRecorder);
   return bot;
